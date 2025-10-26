@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransperJobs Portal - Frontend Complete</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font and professional background color -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* --- DARK THEME STYLES (Default) --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Deep background */
+            color: #e0e0e0; /* Default text color */
+            transition: all 0.5s ease-in-out;
+        }
+        .bg-white, .job-card, .modal-content, .nav-bar {
+            background-color: #1e1e1e; /* Darker surfaces */
+            color: #e0e0e0;
+        }
+        /* Buttons and Links - kept vibrant for contrast */
+        .text-blue-800 { color: #5B9AFF; }
+        .text-gray-600 { color: #A0A0A0; }
+        .text-gray-700 { color: #C0C0C0; }
+        .border-gray-200 { border-color: #333333; }
+        .text-gray-500 { color: #888888; }
+        .text-gray-800 { color: #E0E0E0; }
+        .bg-gray-100 { background-color: #282828; }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background-color: #555555; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background-color: #333333; }
+
+        /* --- LIGHT THEME OVERRIDES (.light class applied to body) --- */
+        .light {
+            background-color: #f3f5f8; /* Light background */
+            color: #121212; /* Dark text */
+        }
+        .light .nav-bar, .light .job-card, .light .modal-content {
+            background-color: white; /* White surfaces */
+            color: #121212; 
+            border-color: #e5e7eb; 
+        }
+        
+        /* GENERAL TEXT OVERRIDES: Make all text dark in light mode, especially those that default to white/light gray */
+        .light .text-white { color: #121212 !important; } 
+        .light .text-gray-200 { color: #1f2937 !important; }
+        .light .text-gray-400 { color: #4b5563 !important; }
+        .light .text-gray-500 { color: #6b7280 !important; }
+
+        /* --- FIX: OVERRIDE FOR CUSTOM HEX BACKGROUNDS --- */
+        .light .bg-[#1e1e1e] { 
+            background-color: white !important; /* Main card/modal background becomes white */
+            border-color: #e5e7eb !important;
+        } 
+        .light .bg-[#282828] { 
+            background-color: #f3f4f6 !important; /* Inner box backgrounds become light gray */
+            color: #1f2937 !important; /* Ensure text inside is dark */
+            border-color: #d1d5db !important;
+        }
+
+        .light .text-blue-500 { color: #3b82f6; }
+        .light .hover\:text-blue-300:hover { color: #2563eb; }
+        .light .bg-gray-700 { background-color: #d1d5db; color: #1f2937; }
+        .light .border-gray-700 { border-color: #d1d5db; }
+        .light .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .light .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+
+        /* Override badge colors for light theme */
+        .light .bg-green-700 { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+        .light .bg-yellow-700 { background-color: #fef9c3; color: #b45309; border-color: #fde68a; }
+        .light .bg-red-700 { background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+        /* Override large banner colors for light theme */
+        .light .bg-green-600 { background-color: #34d399; color: white; } /* Employer dashboard */
+        .light .bg-yellow-600 { background-color: #facc15; color: #1e1e1e; }
+        .light .bg-red-600 { background-color: #ef4444; color: white; }
+
+        /* Home Page Card Title Fixes */
+        .light .text-blue-400 { color: #1e40af; } /* Darker blue */
+        .light .text-green-400 { color: #047857; } /* Darker green */
+        .light .text-purple-400 { color: #7c3aed; } /* Darker purple */
+
+        /* Input/Search Field Background and Placeholder Fixes */
+        .light input, .light textarea {
+            background-color: white !important; /* Ensure input background is white */
+            color: #121212 !important; /* Ensure input text is dark */
+            border-color: #d1d5db !important;
+        }
+
+        .light input[type="text"]::placeholder, 
+        .light input[type="email"]::placeholder, 
+        .light input[type="password"]::placeholder, 
+        .light input[type="number"]::placeholder, 
+        .light textarea::placeholder {
+            color: #6b7280; /* Dark gray placeholder */
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- FIXED NAVIGATION BAR (Professional Style) -->
+    <nav class="bg-[#1e1e1e] border-b border-gray-700 fixed top-0 left-0 right-0 z-10 shadow-xl nav-bar">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo/Branding and Navigation Links -->
+                <div class="flex-shrink-0 flex items-center h-full">
+                    <span class="text-2xl font-extrabold text-blue-500 tracking-tight mr-6 cursor-pointer" onclick="appState.setView('HOME')">TransperJobs</span>
+                    
+                    <!-- Navigation Links -->
+                    <div class="flex h-full space-x-2 sm:space-x-6">
+                        <button onclick="appState.setView('HOME')" class="nav-button h-full flex items-center px-2 text-sm font-semibold text-blue-500 border-b-2 border-blue-500 transition duration-150">Home</button>
+                        <button onclick="appState.setView('EMPLOYEE_VIEW')" class="nav-button h-full flex items-center px-2 text-sm font-semibold text-gray-400 hover:text-gray-200 transition duration-150">Jobs</button>
+                        <button onclick="appState.setView('EMPLOYER_VIEW')" class="nav-button h-full flex items-center px-2 text-sm font-semibold text-gray-400 hover:text-gray-200 transition duration-150">Recruiter</button>
+                    </div>
+                </div>
+
+                <!-- Central Content (Search/Placeholder) -->
+                <div class="hidden sm:block w-full max-w-sm mx-auto">
+                    <input type="text" placeholder="Search jobs, companies, data..." class="w-full p-2 pl-4 text-sm bg-[#282828] border border-gray-700 text-white rounded-full focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500 shadow-inner">
+                </div>
+                
+                <!-- Authentication & Profile (Simplified) -->
+                <div class="flex items-center space-x-4 ml-4">
+                    <!-- NEW: Theme Toggle Button -->
+                    <button id="theme-toggle" onclick="appState.toggleTheme()" class="p-2 rounded-full hover:bg-[#282828] transition duration-300">
+                        <!-- Moon Icon (Default: Dark Mode) -->
+                        <svg id="moon-icon" class="h-6 w-6 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <!-- Sun Icon (Light Mode) -->
+                        <svg id="sun-icon" class="h-6 w-6 text-yellow-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+                    <!-- User ID display for reference -->
+                    <span class="text-xs text-gray-500 hidden lg:inline" id="user-id-display"></span>
+                    
+                    <!-- Profile Icon -->
+                    <svg class="h-8 w-8 text-gray-400 hover:text-blue-500 cursor-pointer rounded-full p-0.5 transition duration-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.88 6-3.88 2 0 5.97 1.89 6 3.88-1.29 1.94-3.5 3.22-6 3.22z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content Wrapper (Pushed down by nav bar height) -->
+    <div class="pt-20 pb-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="app" class="w-full">
+
+            <!-- Loading Indicator / Error Message -->
+            <div id="message-area" class="text-center p-6 bg-yellow-900 text-yellow-300 rounded-lg hidden mb-6 font-medium border border-yellow-700"></div>
+            <div id="loading-spinner" class="text-center p-12 hidden bg-[#1e1e1e] rounded-xl shadow-lg">
+                <svg class="animate-spin mx-auto h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2 text-blue-500 font-medium">Loading TransperJobs data from API...</p>
+            </div>
+            
+            <!-- Main Content Area (Role Specific) -->
+            <div id="content-area">
+                <!-- Content will be rendered here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modals -->
+    
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0" aria-modal="true" role="dialog">
+        <div class="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-sm p-8 transform translate-y-4 transition-transform duration-300 border border-gray-700 modal-content">
+            <h3 class="text-3xl font-bold mb-6 text-blue-500 text-center">Sign In to TransperJobs</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+            </div>
+            
+            <div id="login-message" class="text-sm text-red-500 mt-4 hidden"></div>
+
+            <div class="mt-6">
+                <!-- Updated to simulate successful login -->
+                <button onclick="simulateRegistration()" class="w-full py-3 bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-[1.01]">Sign In</button>
+            </div>
+            
+            <p class="text-center text-sm text-gray-500 mt-4">
+                Don't have an account? 
+                <button onclick="appState.closeModal('login-modal'); appState.openModal('signup-modal');" class="text-blue-500 hover:text-blue-300 font-medium transition duration-150">Sign Up</button>
+            </p>
+            <button onclick="appState.closeModal('login-modal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-300 text-2xl font-light transition duration-150 transform hover:rotate-90">&times;</button>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signup-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0" aria-modal="true" role="dialog">
+        <div class="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-sm p-8 transform translate-y-4 transition-transform duration-300 relative border border-gray-700 modal-content">
+            <h3 class="text-3xl font-bold mb-6 text-blue-500 text-center">Create Your Account</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="signup-email" class="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
+                    <input type="email" id="signup-email" placeholder="you@example.com" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+                <div>
+                    <label for="signup-password" class="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                    <input type="password" id="signup-password" placeholder="Min. 8 characters" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+            </div>
+            
+            <div id="signup-message" class="text-sm text-red-500 mt-4 hidden"></div>
+
+            <div class="mt-6">
+                <!-- Updated to simulate successful registration -->
+                <button onclick="simulateRegistration()" class="w-full py-3 bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-[1.01]">Sign Up</button>
+            </div>
+            
+            <p class="text-center text-sm text-gray-500 mt-4">
+                Already have an account? 
+                <button onclick="appState.closeModal('signup-modal'); appState.openModal('login-modal');" class="text-blue-500 hover:text-blue-300 font-medium transition duration-150">Sign In</button>
+            </p>
+            <button onclick="appState.closeModal('signup-modal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-300 text-2xl font-light transition duration-150 transform hover:rotate-90">&times;</button>
+        </div>
+    </div>
+
+    <!-- Job Reporting Modal (For Employees) -->
+    <div id="report-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0" aria-modal="true" role="dialog">
+        <div class="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-md p-6 transform translate-y-4 transition-transform duration-300 relative border border-gray-700 modal-content">
+            <h3 class="text-2xl font-bold mb-4 text-blue-500">Report Actual CTC</h3>
+            <p class="text-sm text-gray-400 mb-4">Help the community by providing the actual CTC offered after the interview process for <span id="report-job-title" class="font-semibold text-white"></span>.</p>
+            
+            <input type="hidden" id="report-job-id">
+            
+            <div class="mb-4">
+                <label for="reported-ctc" class="block text-sm font-medium text-gray-400 mb-1">Actual CTC Offered (in INR, e.g., 500000)</label>
+                <input type="number" id="reported-ctc" placeholder="Enter actual CTC amount" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+            </div>
+
+            <div id="report-message" class="text-sm text-red-500 mb-4 hidden"></div>
+
+            <div class="flex justify-end space-x-3">
+                <button onclick="appState.closeModal('report-modal')" class="px-4 py-2 text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600 font-medium transition-all duration-300 transform hover:scale-[1.05]">Cancel</button>
+                <button onclick="reportJobCTC()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-all duration-300 transform hover:scale-[1.05]">Submit Report</button>
+            </div>
+            <button onclick="appState.closeModal('report-modal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-300 text-2xl font-light transition duration-150 transform hover:rotate-90">&times;</button>
+        </div>
+    </div>
+
+    <!-- Job Experience Rating Modal (For Employees) -->
+    <div id="rating-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0" aria-modal="true" role="dialog">
+        <div class="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-md p-6 transform translate-y-4 transition-transform duration-300 relative border border-gray-700 modal-content">
+            <h3 class="text-2xl font-bold mb-4 text-blue-500">Rate Job Experience</h3>
+            <p class="text-sm text-gray-400 mb-4">Rate the overall application/interview experience for <span id="rating-job-title" class="font-semibold text-white"></span>.</p>
+            
+            <input type="hidden" id="rating-job-id">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-400 mb-1">Your Rating (1-5 Stars)</label>
+                <div id="star-rating-input" class="flex space-x-2 text-3xl cursor-pointer">
+                    <!-- Stars will be dynamically set or handled via hover/click in JS for better UX -->
+                    <span data-value="1" class="text-gray-300 hover:text-yellow-500 transition duration-100">★</span>
+                    <span data-value="2" class="text-gray-300 hover:text-yellow-500 transition duration-100">★</span>
+                    <span data-value="3" class="text-gray-300 hover:text-yellow-500 transition duration-100">★</span>
+                    <span data-value="4" class="text-gray-300 hover:text-yellow-500 transition duration-100">★</span>
+                    <span data-value="5" class="text-gray-300 hover:text-yellow-500 transition duration-100">★</span>
+                    <input type="hidden" id="selected-rating" value="0">
+                </div>
+            </div>
+
+            <div id="rating-message" class="text-sm text-red-500 mb-4 hidden"></div>
+
+            <div class="flex justify-end space-x-3">
+                <button onclick="appState.closeModal('rating-modal')" class="px-4 py-2 text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600 font-medium transition-all duration-300 transform hover:scale-[1.05]">Cancel</button>
+                <button onclick="rateJobExperience()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-all duration-300 transform hover:scale-[1.05]">Submit Rating</button>
+            </div>
+            <button onclick="appState.closeModal('rating-modal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-300 text-2xl font-light transition duration-150 transform hover:rotate-90">&times;</button>
+        </div>
+    </div>
+
+    <!-- Job Posting Modal (For Employers) -->
+    <div id="post-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0" aria-modal="true" role="dialog">
+        <div class="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-lg p-6 transform translate-y-4 transition-transform duration-300 relative border border-gray-700 modal-content">
+            <h3 class="text-2xl font-bold mb-4 text-blue-500">Post a New Job</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="post-title" class="block text-sm font-medium text-gray-400 mb-1">Job Title</label>
+                    <input type="text" id="post-title" placeholder="e.g., Senior Software Engineer" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+                <div>
+                    <label for="post-company" class="block text-sm font-medium text-gray-400 mb-1">Company Name</label>
+                    <input type="text" id="post-company" placeholder="e.g., TechCorp Solutions" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+                <div>
+                    <label for="post-ctc-advertised" class="block text-sm font-medium text-gray-400 mb-1">Advertised CTC (in INR, e.g., 800000)</label>
+                    <input type="number" id="post-ctc-advertised" placeholder="Enter advertised CTC" class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white">
+                </div>
+                <div>
+                    <label for="post-description" class="block text-sm font-medium text-gray-400 mb-1">Job Description</label>
+                    <textarea id="post-description" rows="3" placeholder="A brief description of the role and requirements." class="w-full p-3 border border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-[#282828] text-white"></textarea>
+                </div>
+            </div>
+
+            <div id="post-message" class="text-sm text-red-500 mt-4 hidden"></div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="appState.closeModal('post-modal')" class="px-4 py-2 text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600 font-medium transition-all duration-300 transform hover:scale-[1.05]">Cancel</button>
+                <button onclick="postNewJob()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-all duration-300 transform hover:scale-[1.05]">Post Job</button>
+            </div>
+            <button onclick="appState.closeModal('post-modal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-300 text-2xl font-light transition duration-150 transform hover:rotate-90">&times;</button>
+        </div>
+    </div>
+
+    <!-- Main Script -->
+    <script>
+        // --- API Configuration ---
+        // This is where your code is configured to connect to the backend (http://localhost:3000)
+        // You can leave this as is for the frontend UI to function.
+        const API_URL = 'http://localhost:3000/api';
+        
+        // Use a simple UUID for user identification, replacing Firebase UID
+        let userId = localStorage.getItem('transperjobs_uid') || crypto.randomUUID();
+        localStorage.setItem('transperjobs_uid', userId);
+
+        let pollingIntervalId; 
+        
+        // --- Utility Functions ---
+
+        /**
+         * Formats a number as INR currency.
+         * @param {number} amount - The amount in number format.
+         * @returns {string} Formatted currency string.
+         */
+        function formatCurrency(amount) {
+            if (amount === null || amount === undefined || amount === 'N/A') return 'N/A';
+            const num = Number(amount);
+            if (num >= 100000) {
+                return new Intl.NumberFormat('en-IN', { 
+                    style: 'currency', 
+                    currency: 'INR', 
+                    notation: 'compact', 
+                    compactDisplay: 'short',
+                    maximumFractionDigits: 1
+                }).format(num).replace('₹', '₹');
+            }
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+        }
+        
+        /**
+         * Renders the transparency score badge HTML.
+         * @param {number} score - The transparency score (0-100).
+         * @returns {string} HTML string for the badge.
+         */
+        function renderScoreBadge(score) {
+            const scoreColor = score >= 80 ? 'bg-green-700 text-white border-green-600' : score >= 50 ? 'bg-yellow-700 text-white border-yellow-600' : 'bg-red-700 text-white border-red-600';
+            const scoreText = score >= 80 ? 'Excellent' : score >= 50 ? 'Fair' : 'Poor';
+            
+            return `
+                <div class="flex items-center space-x-2 p-1.5 border rounded-full ${scoreColor} text-xs font-semibold">
+                    <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15H9v-2h2v2zm0-4H9V8h2v4z"/>
+                    </svg>
+                    <span>${score}% Transparency (${scoreText})</span>
+                </div>
+            `;
+        }
+
+        /**
+         * Renders the experience rating as bold text.
+         */
+        function renderRatingText(rating, count) {
+            const countText = count > 0 ? `(${count} ratings)` : '(No ratings)';
+            const ratingText = rating !== 'N/A' ? rating : 'N/A';
+            
+            return `
+                <div class="flex flex-col items-end text-gray-400">
+                    <span class="text-xl font-extrabold text-white">${ratingText} <span class="text-yellow-500">★</span></span>
+                    <span class="text-xs text-gray-500">${countText} Experience Avg.</span>
+                </div>
+            `;
+        }
+
+
+        // --- Application State Management ---
+
+        const appState = {
+            jobs: [],
+            currentView: localStorage.getItem('transperjobs_view') || 'HOME', 
+            isAuthReady: false,
+            loading: true,
+            // Check localStorage for simulated registration status
+            isUserRegistered: localStorage.getItem('transperjobs_registered') === 'true', 
+
+            setJobs(newJobs) {
+                this.jobs = newJobs;
+                this.render();
+            },
+
+            setLoading(isLoading) {
+                this.loading = isLoading;
+                document.getElementById('loading-spinner').classList.toggle('hidden', !isLoading);
+                document.getElementById('content-area').classList.toggle('hidden', isLoading);
+            },
+
+            showMessage(message, type = 'warning') {
+                const messageArea = document.getElementById('message-area');
+                messageArea.textContent = message;
+                const baseClass = 'text-center p-4 rounded-lg mt-4 mb-6 font-medium border';
+                const typeClass = type === 'error' ? 'bg-red-900 text-red-300 border-red-700' : type === 'info' ? 'bg-blue-900 text-blue-300 border-blue-700' : 'bg-yellow-900 text-yellow-300 border-yellow-700';
+                messageArea.className = `${baseClass} ${typeClass}`;
+                messageArea.classList.remove('hidden');
+                setTimeout(() => messageArea.classList.add('hidden'), 5000);
+            },
+
+            // Modal Handlers (omitted for brevity, assume unchanged)
+            openModal(modalId, jobId = null) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'translate-y-4');
+                    if (modalId === 'report-modal' && jobId) {
+                        const job = this.jobs.find(j => j.id === jobId);
+                        document.getElementById('report-job-id').value = jobId;
+                        document.getElementById('report-job-title').textContent = `${job.title} at ${job.company}`;
+                        document.getElementById('reported-ctc').value = '';
+                        document.getElementById('report-message').classList.add('hidden');
+                    }
+                }, 10);
+            },
+
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300); 
+            },
+            
+            openRatingModal(jobId, title, company) {
+                document.getElementById('rating-job-id').value = jobId;
+                document.getElementById('rating-job-title').textContent = `${title} at ${company}`;
+                document.getElementById('selected-rating').value = '0';
+                document.getElementById('rating-message').classList.add('hidden');
+                const stars = document.getElementById('star-rating-input').querySelectorAll('span');
+                updateStarVisuals(0, stars);
+                this.openModal('rating-modal');
+            },
+
+            setView(view) {
+                this.currentView = view;
+                localStorage.setItem('transperjobs_view', view);
+                this.render();
+                // Update navigation button active state (simplified for API version)
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    const isActive = btn.getAttribute('onclick').includes(`'${view}'`);
+                    if (isActive) {
+                        btn.classList.add('text-blue-500', 'border-b-2', 'border-blue-500');
+                        btn.classList.remove('text-gray-400', 'hover:text-gray-200', 'text-gray-600', 'hover:text-gray-800');
+                    } else {
+                        btn.classList.remove('text-blue-500', 'border-b-2', 'border-blue-500');
+                        if (document.body.classList.contains('light')) {
+                            btn.classList.add('text-gray-600', 'hover:text-gray-800');
+                        } else {
+                            btn.classList.add('text-gray-400', 'hover:text-gray-200');
+                        }
+                    }
+                });
+            },
+
+            // Theme Handlers 
+            toggleTheme() {
+                const body = document.body;
+                const currentTheme = body.classList.contains('light') ? 'light' : 'dark';
+                
+                if (currentTheme === 'dark') {
+                    body.classList.add('light');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.remove('light');
+                    localStorage.setItem('theme', 'dark');
+                }
+                this.updateThemeIcons();
+                this.setView(this.currentView);
+            },
+
+            updateThemeIcons() {
+                const isLight = document.body.classList.contains('light');
+                document.getElementById('sun-icon').classList.toggle('hidden', !isLight);
+                document.getElementById('moon-icon').classList.toggle('hidden', isLight);
+                
+                const toggleButton = document.getElementById('theme-toggle');
+                if (isLight) {
+                    toggleButton.classList.remove('hover:bg-[#282828]');
+                    toggleButton.classList.add('hover:bg-gray-200');
+                } else {
+                    toggleButton.classList.add('hover:bg-[#282828]');
+                    toggleButton.classList.remove('hover:bg-gray-200');
+                }
+            },
+            
+            // Function to apply theme preference on initial load
+            applyThemePreference() {
+                const preferredTheme = localStorage.getItem('theme');
+                if (preferredTheme === 'light') {
+                    document.body.classList.add('light');
+                } else {
+                    document.body.classList.remove('light');
+                }
+                // Initial update of icons based on applied class
+                this.updateThemeIcons();
+            },
+
+
+            // Main Renderer (omitted for brevity, assume unchanged logic relying on job data)
+            render() {
+                if (!this.isAuthReady || this.loading) return;
+
+                const contentArea = document.getElementById('content-area');
+                contentArea.innerHTML = '';
+                
+                if (this.currentView === 'HOME') {
+                    contentArea.innerHTML = this.renderHomePage();
+                } else if (this.currentView === 'EMPLOYEE_VIEW') {
+                    contentArea.innerHTML = this.renderEmployeeView();
+                } else if (this.currentView === 'EMPLOYER_VIEW') {
+                    contentArea.innerHTML = this.renderEmployerView();
+                }
+                
+                setupRatingInteraction();
+            },
+
+            // --- Home Page Renderer (unchanged HTML structure) ---
+            renderHomePage() {
+                return `
+                    <div class="bg-[#1e1e1e] p-6 sm:p-10 rounded-xl shadow-lg border border-gray-700">
+                        
+                        <div class="text-center mb-8">
+                            <h2 class="text-4xl font-extrabold text-blue-500 mb-2">Find Your Honest Career Path.</h2>
+                            <p class="text-xl text-gray-400 mb-6">Transparency is the new currency in the job market.</p>
+                            <!-- Image using the provided URL - Increased height and object-contain -->
+                            <img src="https://media.licdn.com/dms/image/v2/D4D12AQG1HyT73rWlTQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1684859600372?e=2147483647&v=beta&t=zb6hbukCZdYW93nAUvyXD-pBI651YAe0JMSWLWK0DzU" 
+                                 alt="Professionals reviewing data for transparent career decisions" 
+                                 class="w-full h-96 object-contain rounded-xl shadow-lg mx-auto border border-gray-700">
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-8 text-center">
+                            <div class="p-6 bg-[#282828] rounded-xl border border-blue-900 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                                <h3 class="text-2xl font-bold text-blue-400 mb-2">Transparency Score</h3>
+                                <p class="text-gray-400 text-sm">A community rating based on the deviation between **Advertised CTC** and **Reported CTC**. High score = high trust.</p>
+                            </div>
+                            <div class="p-6 bg-[#282828] rounded-xl border border-green-900 transition-all duration-300 hover:shadow-2xl hover:border-green-500">
+                                <h3 class="text-2xl font-bold text-green-400 mb-2">Experience Ratings</h3>
+                                <p class="text-gray-400 text-sm">Candidate-submitted 1-5 star ratings for the entire application and interview process. Trust and quality of hiring.</p>
+                            </div>
+                            <div class="p-6 bg-[#282828] rounded-xl border border-purple-900 transition-all duration-300 hover:shadow-2xl hover:border-purple-500">
+                                <h3 class="text-2xl font-bold text-purple-400 mb-2">Recruiter Access</h3>
+                                <p class="text-gray-400 text-sm">Employers post jobs and monitor their company's reputation metrics in real-time, helping them attract quality talent.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-10 pt-8 border-t border-gray-700">
+                            <h3 class="text-2xl font-bold text-gray-200 mb-4">Take the Next Step</h3>
+                            <p class="text-gray-400 mb-6">
+                                ${this.isUserRegistered ? 
+                                    '<span class="font-semibold text-green-500">You are signed in.</span> Start exploring roles and reporting data now!' : 
+                                    'Start exploring job opportunities now, or if you\'re a company, begin building your transparent hiring brand.'}
+                            </p>
+                            
+                            <!-- NEW CTA BLOCK: Sign up is primary action -->
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="appState.openModal('login-modal')" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-xl hover:bg-blue-700 transition-all duration-300 transform hover:scale-[1.02] order-1 sm:order-none">
+                                    Sign Up and Get Started
+                                </button>
+                                <button onclick="appState.setView('EMPLOYEE_VIEW')" class="px-6 py-3 bg-gray-700 text-gray-200 rounded-lg font-bold shadow-md hover:bg-gray-600 transition-all duration-300 transform hover:scale-[1.02]">
+                                    Browse Jobs Anonymously
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // --- Employee View (Job Seeker) Renderer - LinkedIn Feed Style ---
+            renderEmployeeView() {
+                const sortedJobs = [...this.jobs].sort((a, b) => b.transparency_score - a.transparency_score);
+
+                let html = `
+                    <h2 class="text-xl font-semibold text-gray-200 mb-6">Job Feed (Sorted by Transparency)</h2>
+                    <div class="text-sm text-gray-500 mb-6">Your Reporter ID: <span class="font-mono text-xs bg-[#282828] p-1 rounded border border-gray-700">${userId}</span></div>
+                    <div class="space-y-4">
+                `;
+
+                if (sortedJobs.length === 0) {
+                    html += `<div class="p-6 text-center text-gray-500 bg-[#1e1e1e] border-2 border-dashed border-gray-700 rounded-xl shadow-sm">No jobs posted yet. Check back soon!</div>`;
+                }
+
+                sortedJobs.forEach(job => {
+                    
+                    const actionHandler = this.isUserRegistered 
+                        ? (action, title, company) => `handleEmployeeAction('${job.id}', '${action}', '${title}', '${company}')`
+                        : () => `handleAnonymousRestriction()`;
+                    
+                    const disabledClass = this.isUserRegistered ? '' : 'opacity-50 cursor-not-allowed';
+                    
+                    // Default values if server returns N/A for aggregation
+                    const avgReported = job.average_reported_ctc || job.ctc_advertised;
+                    const totalRatings = job.total_ratings || 0;
+
+
+                    html += `
+                        <div class="job-card bg-[#1e1e1e] p-6 rounded-xl shadow-lg border border-gray-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 transform hover:scale-[1.005]">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white hover:text-blue-500 cursor-pointer">${job.title}</h3>
+                                    <p class="text-md text-gray-400 flex items-center mt-1">
+                                        <div class="w-6 h-6 mr-2 bg-[#282828] rounded-full flex items-center justify-center text-xs text-gray-500 font-mono flex-shrink-0 border border-gray-700">
+                                            [Logo]
+                                        </div>
+                                        ${job.company}
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 space-y-2 text-right">
+                                    ${renderScoreBadge(job.transparency_score)}
+                                    ${renderRatingText(job.average_experience_rating, totalRatings)}
+                                </div>
+                            </div>
+
+                            <p class="text-gray-400 mb-4 text-sm">${job.description}</p>
+                            
+                            <!-- BOLD CTC DISPLAY -->
+                            <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400 mb-4 border-t border-gray-700 pt-3">
+                                <div class="flex items-center">
+                                    <span class="font-semibold text-blue-500 mr-2">Advertised CTC:</span> 
+                                    <span class="font-extrabold text-lg text-white">${formatCurrency(job.ctc_advertised)}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="font-semibold text-gray-400 mr-2">Reported Avg.:</span> 
+                                    <span class="font-extrabold text-lg text-white">${formatCurrency(avgReported)}</span>
+                                    <span class="text-xs text-gray-500 ml-1">(${job.total_ratings} reports)</span>
+                                </div>
+                            </div>
+                            
+                            <!-- ACTION BUTTONS -->
+                            <div class="flex flex-wrap gap-3 mt-4">
+                                <button 
+                                    onclick="${actionHandler('APPLY', job.title, job.company)}" 
+                                    class="px-5 py-2 bg-green-600 text-white rounded-full font-bold shadow-lg hover:bg-green-700 transition-all duration-300 text-sm flex items-center transform hover:scale-105 ${disabledClass}"
+                                >
+                                    <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    Quick Apply
+                                </button>
+
+                                <button 
+                                    onclick="${actionHandler('RATE', job.title, job.company)}" 
+                                    class="px-5 py-2 bg-yellow-600 text-white rounded-full font-bold shadow-lg hover:bg-yellow-700 transition-all duration-300 text-sm flex items-center transform hover:scale-105 ${disabledClass}"
+                                >
+                                    <svg class="h-4 w-4 mr-2 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-2 9c-.34 0-.67.04-1 .12V11h2c1.1 0 2 .9 2 2v.12c-.33-.08-.66-.12-1-.12z"/></svg>
+                                    Rate Experience
+                                </button>
+
+                                <button 
+                                    onclick="${actionHandler('REPORT', job.title, job.company)}" 
+                                    class="px-5 py-2 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all duration-300 text-sm flex items-center transform hover:scale-105 ${disabledClass}"
+                                >
+                                    Report Actual Offer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                return html;
+            },
+
+            // --- Employer View Renderer ---
+            renderEmployerView() {
+                const companyJobs = this.jobs.filter(j => j.posted_by_user_id === userId);
+                
+                // Calculate the company's overall average transparency score
+                const totalScore = companyJobs.reduce((sum, job) => sum + job.transparency_score, 0);
+                const overallAvgScore = companyJobs.length > 0 ? Math.round(totalScore / companyJobs.length) : 100;
+
+                const scoreColor = overallAvgScore >= 80 ? 'bg-green-600' : overallAvgScore >= 50 ? 'bg-yellow-600' : 'bg-red-600';
+                
+                let html = `
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-gray-200">Recruiter Dashboard</h2>
+                        <button onclick="appState.openModal('post-modal')" class="px-4 py-2 bg-blue-700 text-white rounded-lg shadow-lg hover:bg-blue-800 transition-all duration-300 font-medium flex items-center text-sm transform hover:scale-[1.05]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            Post New Job
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-6">Your Reporter ID: <span class="font-mono text-xs bg-[#282828] p-1 rounded border border-gray-700">${userId}</span></p>
+
+
+                    <div class="p-6 rounded-xl shadow-lg mb-8 ${scoreColor} text-white transition-all duration-300 hover:shadow-2xl">
+                        <h3 class="text-xl font-bold mb-1">Overall Company Transparency Score</h3>
+                        <p class="text-5xl font-extrabold">${overallAvgScore}%</p>
+                        <p class="text-sm mt-2">${companyJobs.length} active job postings influencing this score. Track this score to maintain talent trust.</p>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-200 mb-4 border-b border-gray-700 pb-2">Your Active Postings</h3>
+                    <div class="space-y-4">
+                `;
+
+                if (companyJobs.length === 0) {
+                    html += `<div class="p-6 text-center text-gray-500 bg-[#1e1e1e] border-2 border-dashed border-gray-700 rounded-xl shadow-sm">You have no active jobs. Post one now!</div>`;
+                }
+
+                companyJobs.forEach(job => {
+                    const score = job.transparency_score;
+                    const scoreColorClass = score >= 80 ? 'bg-green-900 text-green-300' : score >= 50 ? 'bg-yellow-900 text-yellow-300' : 'bg-red-900 text-red-300';
+                    const avgReported = job.average_reported_ctc || job.ctc_advertised;
+
+                    html += `
+                        <div class="job-card bg-[#1e1e1e] p-5 rounded-xl shadow-md border border-gray-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 transform hover:scale-[1.005]">
+                            <h4 class="text-lg font-bold text-white mb-2">${job.title}</h4>
+                            <div class="flex items-center space-x-4 mb-3">
+                                <span class="text-sm font-semibold px-3 py-1 rounded-full ${scoreColorClass}">
+                                    Transparency: ${score}%
+                                </span>
+                                <!-- RATING DISPLAY FOR EMPLOYER -->
+                                <div class="flex items-center text-sm text-gray-400">
+                                    <span class="text-lg text-yellow-500">★</span>
+                                    <span class="ml-1">${job.average_experience_rating} avg. (${job.total_ratings} ratings)</span>
+                                </div>
+                            </div>
+                            <!-- BOLD CTC DISPLAY -->
+                            <div class="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                                <div><span class="font-semibold text-blue-500">Advertised CTC:</span> <span class="font-extrabold text-white">${formatCurrency(job.ctc_advertised)}</span></div>
+                                <div><span class="font-semibold text-gray-400">Avg. Reported CTC:</span> <span class="font-extrabold text-white">${formatCurrency(avgReported)}</span></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                return html;
+            }
+        };
+
+        // --- Star Rating Interaction Setup (unchanged) ---
+
+        function setupRatingInteraction() {
+            const ratingContainer = document.getElementById('star-rating-input');
+            if (!ratingContainer) return;
+            const stars = ratingContainer.querySelectorAll('span');
+            const hiddenInput = document.getElementById('selected-rating');
+
+            stars.forEach(star => {
+                star.onclick = null;
+                star.onmouseover = null;
+                star.onmouseout = null;
+
+                star.onclick = () => {
+                    const value = parseInt(star.getAttribute('data-value'), 10);
+                    hiddenInput.value = value;
+                    updateStarVisuals(value, stars);
+                };
+                star.onmouseover = () => {
+                    const value = parseInt(star.getAttribute('data-value'), 10);
+                    updateStarVisuals(value, stars);
+                };
+                star.onmouseout = () => {
+                    updateStarVisuals(parseInt(hiddenInput.value, 10), stars);
+                };
+            });
+            updateStarVisuals(parseInt(hiddenInput.value, 10), stars);
+        }
+
+        function updateStarVisuals(value, stars) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'), 10);
+                if (starValue <= value) {
+                    star.classList.add('text-yellow-500');
+                    star.classList.remove('text-gray-300');
+                } else {
+                    star.classList.remove('text-yellow-500');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
+        
+        // --- Authentication and Restriction Handlers (using localStorage) ---
+
+        function simulateRegistration() {
+            appState.closeModal('login-modal');
+            appState.closeModal('signup-modal');
+            appState.isUserRegistered = true;
+            localStorage.setItem('transperjobs_registered', 'true'); // Persist status
+            appState.showMessage('You are now signed in! You can apply, rate, and report job data.', 'info');
+            appState.render(); 
+        }
+
+        function handleAnonymousRestriction() {
+             appState.openModal('login-modal');
+             appState.showMessage('Please Sign Up or Sign In to use this feature.', 'warning');
+        }
+
+        function handleEmployeeAction(jobId, actionType, jobTitle, jobCompany) {
+            if (actionType === 'APPLY') {
+                appState.showMessage(`Simulating application for ${jobTitle} at ${jobCompany}... This feature is a UI placeholder in this prototype.`, 'info');
+            } else if (actionType === 'RATE') {
+                appState.openRatingModal(jobId, jobTitle, jobCompany);
+            } else if (actionType === 'REPORT') {
+                appState.openModal('report-modal', jobId);
+            }
+        }
+        
+        // --- API Integration Functions (Mocked to show UI changes) ---
+        // Note: These functions send data to the API URL but are included 
+        // to allow the UI (buttons, modals) to function and show success messages.
+        
+        async function postAPI(endpoint, data) {
+            console.log(`[MOCK API] Attempting POST to ${API_URL}${endpoint} with data:`, data);
+            // Simulate API latency
+            await new Promise(resolve => setTimeout(resolve, 500)); 
+            
+            // For a pure frontend view, we return a mock success response
+            return { status: 'success', message: 'Data submission mocked successfully.' };
+        }
+
+        async function fetchJobs() {
+            if (!appState.isAuthReady) return;
+            
+            if (appState.jobs.length === 0) appState.setLoading(true);
+
+            try {
+                // Mock job data structure expected from the API
+                const mockJobs = [
+                    { id: 1, title: "Software Development Engineer II", company: "TechCorp", ctc_advertised: 570000, description: "Build scalable back-end services...", transparency_score: 50, average_reported_ctc: 500000, average_experience_rating: '3.5', total_ratings: 12, posted_by_user_id: 'default-recruiter-id' },
+                    { id: 2, title: "Data Scientist", company: "DataSolutions Inc", ctc_advertised: 1200000, description: "Advanced ML model development and deployment.", transparency_score: 95, average_reported_ctc: 1180000, average_experience_rating: '4.8', total_ratings: 25, posted_by_user_id: 'another-recruiter-id' },
+                    { id: 3, title: "Product Manager", company: "InnovateLabs", ctc_advertised: 1800000, description: "Define product vision and strategy for growth.", transparency_score: 20, average_reported_ctc: 1400000, average_experience_rating: '2.1', total_ratings: 5, posted_by_user_id: 'default-recruiter-id' },
+                ];
+                
+                appState.setJobs(mockJobs);
+                
+            } catch (error) {
+                // Since we are mocking, this won't fire, but keep it for robustness
+                console.error("Error fetching jobs:", error);
+                appState.showMessage(`Displaying mock data. Backend server connection bypassed.`, 'info');
+            } finally {
+                appState.setLoading(false);
+            }
+        }
+
+        async function postNewJob() {
+            // ... (Form validation logic remains, skipping database call)
+            const title = document.getElementById('post-title').value.trim();
+            if (!title) return; // Simplified validation
+
+            try {
+                // Mock API call
+                await postAPI('/jobs', { title: title }); 
+
+                appState.closeModal('post-modal');
+                appState.showMessage(`Job posted successfully! (Mocked) Check your console for data sent.`, 'info');
+                fetchJobs(); 
+            } catch (error) {
+                 // Mock Error Handling
+                 document.getElementById('post-message').textContent = `Post failed: (Mocked error)`;
+                 document.getElementById('post-message').classList.remove('hidden');
+            }
+        }
+
+        async function reportJobCTC() {
+            // ... (Validation logic remains)
+            try {
+                // Mock API call
+                await postAPI(`/jobs/${document.getElementById('report-job-id').value}/report`, { reported_ctc: 123 }); 
+
+                appState.closeModal('report-modal');
+                appState.showMessage('Thank you for your report! (Mocked) The score change will be simulated on next refresh.', 'info');
+                fetchJobs(); 
+
+            } catch (error) { /* ... */ }
+        }
+
+        async function rateJobExperience() {
+            // ... (Validation logic remains)
+            try {
+                // Mock API call
+                await postAPI(`/jobs/${document.getElementById('rating-job-id').value}/report`, { experience_rating: 4 }); 
+                
+                appState.closeModal('rating-modal');
+                appState.showMessage('Experience rating submitted successfully. (Mocked) The rating change will be simulated on next refresh.', 'info');
+                fetchJobs(); 
+                
+            } catch (error) { /* ... */ }
+        }
+        
+        // --- Initialization ---
+        
+        /**
+         * Initializes the application by applying theme and starting data polling.
+         */
+        function initializeApp() {
+            // Check and apply theme preference first
+            appState.applyThemePreference(); 
+            
+            document.getElementById('user-id-display').textContent = `UID: ${userId.substring(0, 8)}...`;
+            appState.isAuthReady = true;
+            appState.setView(appState.currentView);
+            startDataPolling(); 
+        }
+
+        function startDataPolling() {
+            if (pollingIntervalId) clearInterval(pollingIntervalId);
+
+            // Fetch mock data immediately, then every 5 seconds
+            fetchJobs(); 
+            pollingIntervalId = setInterval(fetchJobs, 5000); 
+        }
+
+
+        // --- Expose Global Functions for HTML onClick ---
+        window.appState = appState;
+        window.formatCurrency = formatCurrency;
+        window.reportJobCTC = reportJobCTC;
+        window.postNewJob = postNewJob;
+        window.rateJobExperience = rateJobExperience;
+        window.simulateRegistration = simulateRegistration; 
+        window.handleAnonymousRestriction = handleAnonymousRestriction; 
+        window.handleEmployeeAction = handleEmployeeAction; 
+
+        // Initialize the application on page load
+        window.onload = initializeApp;
+
+    </script>
+</body>
+</html>
